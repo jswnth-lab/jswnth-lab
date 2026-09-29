@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>jswnth lab</title>
+<meta name="description" content="jswnth lab — an interactive experiment space.">
+<style>
+  :root{
+    --bg:#05060d; --fg:#e8ecff; --dim:#8b93b8;
+    --a:#7c5cff; --b:#00e5ff; --c:#ff4fd8;
+    --card:rgba(255,255,255,.05); --line:rgba(255,255,255,.12);
+  }
+  *{box-sizing:border-box;margin:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--fg);font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:hidden}
+  #bg{position:fixed;inset:0;z-index:0}
+  .glow{position:fixed;width:520px;height:520px;border-radius:50%;pointer-events:none;z-index:1;
+    background:radial-gradient(circle,rgba(124,92,255,.22),transparent 65%);transform:translate(-50%,-50%);left:50%;top:50%}
+  main{position:relative;z-index:2;max-width:1000px;margin:0 auto;padding:0 20px 80px}
+  nav{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:14px 20px;
+    backdrop-filter:blur(12px);background:rgba(5,6,13,.55);border-bottom:1px solid var(--line)}
+  nav b{letter-spacing:.15em;font-size:.9rem}
+  nav div a{color:var(--dim);text-decoration:none;margin-left:18px;font-size:.9rem;transition:.2s}
+  nav div a:hover{color:var(--b)}
+  header{min-height:88vh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+  .tag{font:.85rem ui-monospace,monospace;color:var(--b);border:1px solid var(--line);padding:4px 12px;border-radius:99px;background:var(--card)}
+  h1{font-size:clamp(2.8rem,10vw,7rem);line-height:1;margin:22px 0 14px;font-weight:800;letter-spacing:-.04em;
+    background:linear-gradient(110deg,var(--b),var(--a) 45%,var(--c) 90%);background-size:200% auto;
+    -webkit-background-clip:text;background-clip:text;color:transparent;animation:shift 6s linear infinite}
+  @keyframes shift{to{background-position:200% center}}
+  .sub{font-size:clamp(1.05rem,2.4vw,1.5rem);color:var(--dim);min-height:2.2em}
+  .sub span{color:var(--fg)}
+  .caret{display:inline-block;width:.6ch;background:var(--b);animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .cta{margin-top:30px;display:flex;gap:12px;flex-wrap:wrap}
+  .btn{padding:12px 22px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;
+    font:inherit;text-decoration:none;transition:.25s;position:relative;overflow:hidden}
+  .btn:hover{border-color:var(--b);box-shadow:0 0 24px rgba(0,229,255,.35);transform:translateY(-2px)}
+  .btn.p{background:linear-gradient(120deg,var(--a),var(--c));border:0}
+  h2{font-size:1.9rem;margin:80px 0 22px;letter-spacing:-.02em}
+  h2 small{font:.8rem ui-monospace,monospace;color:var(--b);display:block;letter-spacing:.2em;margin-bottom:6px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+  .card{padding:22px;border-radius:18px;border:1px solid var(--line);background:var(--card);backdrop-filter:blur(8px);
+    transition:transform .15s,border-color .3s;transform-style:preserve-3d;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0;background:radial-gradient(300px circle at var(--mx,50%) var(--my,50%),rgba(0,229,255,.16),transparent 60%);opacity:0;transition:.3s}
+  .card:hover{border-color:rgba(0,229,255,.5)}
+  .card:hover::before{opacity:1}
+  .card h3{margin-bottom:6px;font-size:1.15rem}
+  .card p{color:var(--dim);font-size:.95rem}
+  .emoji{font-size:1.8rem;display:block;margin-bottom:8px}
+  .term{border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.6);font:.92rem ui-monospace,monospace;overflow:hidden}
+  .term .bar{padding:9px 14px;background:rgba(255,255,255,.06);display:flex;gap:7px;align-items:center;color:var(--dim);font-size:.8rem}
+  .term .bar i{width:11px;height:11px;border-radius:50%;background:#ff5f57}
+  .term .bar i:nth-child(2){background:#febc2e}.term .bar i:nth-child(3){background:#28c840}
+  #out{padding:14px;height:250px;overflow-y:auto;white-space:pre-wrap}
+  #out .y{color:var(--b)} #out .e{color:#ff6b8a}
+  .prompt{display:flex;padding:0 14px 14px;gap:8px}
+  .prompt input{flex:1;background:none;border:0;outline:0;color:var(--fg);font:inherit}
+  .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .sw{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);cursor:pointer;transition:.2s}
+  .sw:hover{transform:scale(1.2)}
+  label{color:var(--dim);font-size:.9rem}
+  input[type=range]{accent-color:var(--a)}
+  #stat{font:.85rem ui-monospace,monospace;color:var(--dim)}
+  footer{text-align:center;color:var(--dim);padding:60px 0 0;font-size:.85rem}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,120px);background:var(--fg);color:#000;padding:10px 18px;border-radius:99px;
+    z-index:9;transition:.4s;font-weight:600}
+  .toast.on{transform:translate(-50%,0)}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="glow" id="glow"></div>
+
+<nav><b>◢ JSWNTH LAB</b><div><a href="#play">Playground</a><a href="#projects">Projects</a><a href="#term">Terminal</a></div></nav>
+
+<main>
+<header>
+  <span class="tag">● online · experiments running</span>
+  <h1>jswnth<br>lab</h1>
+  <p class="sub"><span id="type"></span><span class="caret">&nbsp;</span></p>
+  <div class="cta">
+    <a class="btn p" href="#play">Play with the particles</a>
+    <button class="btn" id="konami">Surprise me</button>
+  </div>
+</header>
+
+<section id="play">
+  <h2><small>01 / PLAYGROUND</small>Your mouse is the physics engine</h2>
+  <p style="color:var(--dim);margin-bottom:16px">Move to attract. Hold click to repel. Tune it below.</p>
+  <div class="row">
+    <label>Colour</label>
+    <span class="sw" style="background:#00e5ff" data-h="187"></span>
+    <span class="sw" style="background:#7c5cff" data-h="255"></span>
+    <span class="sw" style="background:#ff4fd8" data-h="315"></span>
+    <span class="sw" style="background:#7dff6b" data-h="110"></span>
+    <span class="sw" style="background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red)" data-h="rainbow"></span>
+  </div>
+  <div class="row">
+    <label>Count <input type="range" id="count" min="40" max="300" value="120"></label>
+    <label>Force <input type="range" id="force" min="1" max="10" value="5"></label>
+    <button class="btn" id="burst">💥 Burst</button>
+    <span id="stat"></span>
+  </div>
+</section>
+
+<section id="projects">
+  <h2><small>02 / PROJECTS</small>Things in the lab</h2>
+  <div class="grid" id="cards"></div>
+</section>
+
+<section id="term">
+  <h2><small>03 / TERMINAL</small>Type <code>help</code></h2>
+  <div class="term">
+    <div class="bar"><i></i><i></i><i></i>&nbsp; jswnth@lab ~</div>
+    <div id="out"></div>
+    <div class="prompt"><span class="y" style="color:var(--b)">›</span><input id="in" autocomplete="off" spellcheck="false" placeholder="try: help"></div>
+  </div>
+</section>
+
+<footer>Built with vanilla JS · no dependencies · try the Konami code ↑↑↓↓←→←→BA</footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200)};
+
+/* ---------- typewriter ---------- */
+const lines=['building weird little things.','shipping experiments at 2am.','turning ideas into pixels.','welcome to the lab.'];
+let li=0,ci=0,del=false;
+(function tick(){
+  const s=lines[li];
+  $('#type').textContent=s.slice(0,ci);
+  if(!del&&ci===s.length){del=true;return setTimeout(tick,1600)}
+  if(del&&ci===0){del=false;li=(li+1)%lines.length}
+  ci+=del?-1:1;setTimeout(tick,del?25:55);
+})();
+
+/* ---------- particles ---------- */
+const cv=$('#bg'),cx=cv.getContext('2d');
+let W,H,P=[],hue=187,rainbow=false,force=5,down=false,mouse={x:-999,y:-999};
+const dpr=Math.min(devicePixelRatio||1,2);
+function resize(){W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';cx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',resize);resize();
+const mk=(x,y)=>({x:x??Math.random()*W,y:y??Math.random()*H,vx:(Math.random()-.5)*.6,vy:(Math.random()-.5)*.6,r:Math.random()*1.8+.8});
+function setCount(n){while(P.length<n)P.push(mk());P.length=n}
+setCount(120);
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;const g=$('#glow');g.style.left=e.clientX+'px';g.style.top=e.clientY+'px'});
+addEventListener('pointerdown',()=>down=true);addEventListener('pointerup',()=>down=false);
+let t0=0,frames=0,fpsT=performance.now();
+function loop(t){
+  cx.clearRect(0,0,W,H);
+  const h=rainbow?(t/20)%360:hue, f=force*.0009;
+  for(const p of P){
+    const dx=mouse.x-p.x,dy=mouse.y-p.y,d=Math.hypot(dx,dy)||1;
+    if(d<220){const k=(down?-4:1)*f*(1-d/220)*60;p.vx+=dx/d*k;p.vy+=dy/d*k}
+    p.vx*=.985;p.vy*=.985;p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+    p.x=Math.max(0,Math.min(W,p.x));p.y=Math.max(0,Math.min(H,p.y));
+  }
+  cx.lineWidth=1;
+  for(let i=0;i<P.length;i++){
+    const a=P[i];
+    for(let j=i+1;j<P.length;j++){
+      const b=P[j],d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<110){cx.strokeStyle=`hsla(${h},100%,65%,${(1-d/110)*.35})`;cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke()}
+    }
+    cx.fillStyle=`hsl(${h},100%,70%)`;cx.beginPath();cx.arc(a.x,a.y,a.r,0,7);cx.fill();
+  }
+  frames++;if(t-fpsT>1000){$('#stat').textContent=`${P.length} nodes · ${frames} fps`;frames=0;fpsT=t}
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+document.querySelectorAll('.sw').forEach(s=>s.onclick=()=>{
+  if(s.dataset.h==='rainbow'){rainbow=true}else{rainbow=false;hue=+s.dataset.h}
+});
+$('#count').oninput=e=>setCount(+e.target.value);
+$('#force').oninput=e=>force=+e.target.value;
+function burst(x=W/2,y=H/2){for(const p of P){const a=Math.random()*6.28,s=Math.random()*9+2;p.x=x;p.y=y;p.vx=Math.cos(a)*s;p.vy=Math.sin(a)*s}}
+$('#burst').onclick=()=>burst(mouse.x>0?mouse.x:W/2,mouse.y>0?mouse.y:H/2);
+
+/* ---------- project cards (edit me!) ---------- */
+const projects=[
+  {e:'🧪',t:'Experiments',d:'A sandbox for half-baked ideas that might become something.'},
+  {e:'⚡',t:'Quick Tools',d:'Small utilities built to scratch a very specific itch.'},
+  {e:'🎨',t:'Visuals',d:'Generative art, shaders and other pretty distractions.'},
+  {e:'🤖',t:'AI Playground',d:'Prompting, agents and other things that talk back.'},
+  {e:'🌐',t:'Web Toys',d:'Interactive pages that exist purely because they’re fun.'},
+  {e:'📓',t:'Notes',d:'Things learned the hard way, written down for later.'},
+];
+$('#cards').innerHTML=projects.map(p=>`<div class="card"><span class="emoji">${p.e}</span><h3>${p.t}</h3><p>${p.d}</p></div>`).join('');
+document.querySelectorAll('.card').forEach(c=>{
+  c.addEventListener('pointermove',e=>{
+    const r=c.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+    c.style.setProperty('--mx',x+'px');c.style.setProperty('--my',y+'px');
+    c.style.transform=`perspective(700px) rotateX(${(y/r.height-.5)*-10}deg) rotateY(${(x/r.width-.5)*10}deg)`;
+  });
+  c.addEventListener('pointerleave',()=>c.style.transform='');
+});
+
+/* ---------- terminal ---------- */
+const out=$('#out'),inp=$('#in'),hist=[];let hi=0;
+const say=(s,c='')=>{const d=document.createElement('div');if(c)d.className=c;d.textContent=s;out.appendChild(d);out.scrollTop=out.scrollHeight};
+const cmds={
+  help:()=>say('commands: help, about, projects, color <name|hex>, burst, rainbow, matrix, clear, whoami'),
+  about:()=>say('jswnth lab — a personal space for experiments, tools and toys.'),
+  whoami:()=>say('jswnth. builder. probably awake too late.'),
+  projects:()=>projects.forEach(p=>say(`${p.e} ${p.t} — ${p.d}`)),
+  burst:()=>{burst();say('boom.','y')},
+  rainbow:()=>{rainbow=true;say('taste the rainbow.','y')},
+  clear:()=>{out.innerHTML=''},
+  matrix:()=>{hue=120;rainbow=false;say('wake up, neo...','y')},
+  color:a=>{
+    const m={cyan:187,purple:255,pink:315,green:110,red:0,orange:30,yellow:55,blue:220};
+    if(m[a]!==undefined){hue=m[a];rainbow=false;say('hue set: '+a,'y')}
+    else if(/^#?[0-9a-f]{6}$/i.test(a||'')){const n=parseInt(a.replace('#',''),16),r=n>>16&255,g=n>>8&255,b=n&255,mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+      let h=0;if(mx!==mn){const d=mx-mn;h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h=(h*60+360)%360}
+      hue=h;rainbow=false;say('hue set: '+Math.round(h)+'°','y')}
+    else say('usage: color cyan|purple|pink|green|red|orange|yellow|blue|#rrggbb','e');
+  },
+};
+say('welcome to jswnth lab. type "help".','y');
+inp.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const v=inp.value.trim();if(!v)return;hist.push(v);hi=hist.length;
+    say('› '+v);const [c,...a]=v.split(/\s+/);
+    (cmds[c.toLowerCase()]||(()=>say(`command not found: ${c}`,'e')))(a[0]);
+    inp.value='';
+  }else if(e.key==='ArrowUp'&&hi>0){inp.value=hist[--hi];e.preventDefault()}
+  else if(e.key==='ArrowDown'){inp.value=hist[++hi]||'';}
+});
+
+/* ---------- easter eggs ---------- */
+$('#konami').onclick=()=>{rainbow=true;setCount(300);burst();toast('🚀 chaos mode engaged')};
+const K=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];let ki=0;
+addEventListener('keydown',e=>{if(e.target===inp)return;ki=(e.key===K[ki]||e.key.toLowerCase()===K[ki])?ki+1:0;if(ki===K.length){ki=0;$('#konami').click();toast('🎮 Konami unlocked')}});
+</script>
+</body>
+</html>
